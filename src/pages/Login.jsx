@@ -15,7 +15,7 @@ export default function Login() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/gestion/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al iniciar sesión');
     } finally {
