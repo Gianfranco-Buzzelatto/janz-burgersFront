@@ -388,10 +388,10 @@ export default function PublicOrder() {
         <div className="janz-hero-content">
           <div className="janz-hero-left">
             <div style={{ fontSize: 'clamp(2rem, 7vw, 3.8rem)', fontWeight: 900, lineHeight: 1, letterSpacing: '-2px', color: 'white' }}>
-              PEDÍ. MORDÉ.<br /><span style={{ color: '#E8B84B' }}>REPETÍ.</span>
+              PEDÍ. DISFRUTÁ.<br /><span style={{ color: '#E8B84B' }}>REPETÍ.</span>
             </div>
             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', lineHeight: 1.6, marginTop: 10, marginBottom: 10, maxWidth: 420 }}>
-              Emprendimos y crecimos para romper el molde. Pan artesanal sin conservantes hecho por nosotros, ingredientes de calidad para un excelente producto y un sabor con identidad.
+              Emprendimos y crecimos para romper el molde. <br /> Pan artesanal sin conservantes hecho por nosotros, ingredientes de calidad para un excelente producto y un sabor con identidad.
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <a href="https://www.instagram.com/janz.burgers" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '0.78rem' }}>
