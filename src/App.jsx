@@ -32,8 +32,8 @@ import PublicProde from './pages/PublicProde';
 function ProtectedRoute({ children, adminOnly = false }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="loading-screen"><div className="spinner"/></div>;
-  if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
+  if (!user) return <Navigate to="/gestion/login" replace />;
+  if (adminOnly && user.role !== 'admin') return <Navigate to="/gestion/dashboard" replace />;
   return children;
 }
 
@@ -41,13 +41,18 @@ function AppRoutes() {
   const { user } = useAuth();
   return (
     <Routes>
-      {/* Ruta pública — ANTES del wildcard */}
+      {/* Públicas */}
+      <Route path="/" element={<Navigate to="/pedido" replace />} />
       <Route path="/pedido" element={<PublicOrder />} />
       <Route path="/prode-publico" element={<PublicProde />} />
 
-      <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route index element={<Dashboard />} />
+      {/* Login de gestión */}
+      <Route path="/gestion/login" element={user ? <Navigate to="/gestion/dashboard" /> : <Login />} />
+
+      {/* Protegidas bajo /gestion */}
+      <Route path="/gestion" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        <Route index element={<Navigate to="/gestion/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="pedidos" element={<Orders />} />
         <Route path="cocina" element={<Kitchen />} />
         <Route path="stock" element={<ProtectedRoute adminOnly><Stock /></ProtectedRoute>} />
@@ -56,8 +61,8 @@ function AppRoutes() {
         <Route path="clientes" element={<ProtectedRoute adminOnly><Clients /></ProtectedRoute>} />
         <Route path="compras" element={<ProtectedRoute adminOnly><Shopping /></ProtectedRoute>} />
         <Route path="usuarios" element={<ProtectedRoute adminOnly><Users /></ProtectedRoute>} />
-        <Route path="cupones"      element={<ProtectedRoute adminOnly><Coupons /></ProtectedRoute>} />
-        <Route path="adicionales"  element={<ProtectedRoute adminOnly><Additionals /></ProtectedRoute>} />
+        <Route path="cupones" element={<ProtectedRoute adminOnly><Coupons /></ProtectedRoute>} />
+        <Route path="adicionales" element={<ProtectedRoute adminOnly><Additionals /></ProtectedRoute>} />
         <Route path="fidelizacion" element={<ProtectedRoute adminOnly><Loyalty /></ProtectedRoute>} />
         <Route path="caja" element={<ProtectedRoute adminOnly><CashRegister /></ProtectedRoute>} />
         <Route path="reportes" element={<ProtectedRoute adminOnly><Reports /></ProtectedRoute>} />
@@ -69,10 +74,10 @@ function AppRoutes() {
         <Route path="gastos" element={<ProtectedRoute adminOnly><Expenses /></ProtectedRoute>} />
         <Route path="recetas" element={<ProtectedRoute adminOnly><RecipeEditor /></ProtectedRoute>} />
         <Route path="prode" element={<ProtectedRoute adminOnly><Prode /></ProtectedRoute>} />
-        
       </Route>
 
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* Cualquier ruta desconocida va a pedido */}
+      <Route path="*" element={<Navigate to="/pedido" replace />} />
     </Routes>
   );
 }

@@ -12,57 +12,56 @@ const navGroups = [
   {
     label: 'Operaciones',
     items: [
-      { to: '/',             label: 'Dashboard',       icon: LayoutDashboard, exact: true },
-      { to: '/pedidos',      label: 'Pedidos',          icon: ShoppingBag },
-      { to: '/cocina',       label: 'Cocina',           icon: ChefHat },
+      { to: '/gestion/dashboard',   label: 'Dashboard',        icon: LayoutDashboard },
+      { to: '/gestion/pedidos',     label: 'Pedidos',          icon: ShoppingBag },
+      { to: '/gestion/cocina',      label: 'Cocina',           icon: ChefHat },
     ]
   },
   {
     label: 'Gestión',
     adminOnly: true,
     items: [
-      { to: '/stock',        label: 'Stock',            icon: Package },
-      { to: '/productos',    label: 'Escandallo',       icon: Beef },
-      { to: '/ingredientes', label: 'Ingredientes',     icon: BookOpen },
-      { to: '/compras',      label: 'Lista de Compras', icon: ShoppingCart },
-      { to: '/adicionales',  label: 'Adicionales',      icon: Utensils },
+      { to: '/gestion/stock',        label: 'Stock',            icon: Package },
+      { to: '/gestion/productos',    label: 'Escandallo',       icon: Beef },
+      { to: '/gestion/ingredientes', label: 'Ingredientes',     icon: BookOpen },
+      { to: '/gestion/compras',      label: 'Lista de Compras', icon: ShoppingCart },
+      { to: '/gestion/adicionales',  label: 'Adicionales',      icon: Utensils },
     ]
   },
   {
     label: 'Clientes',
     adminOnly: true,
     items: [
-      { to: '/clientes',     label: 'Clientes',         icon: Users },
-      { to: '/cupones',      label: 'Cuponera',         icon: Ticket },
-      { to: '/fidelizacion', label: 'Fidelización',     icon: Star },
-      { to: '/prode',        label: 'Prode Mundial',    icon: Trophy },
+      { to: '/gestion/clientes',     label: 'Clientes',         icon: Users },
+      { to: '/gestion/cupones',      label: 'Cuponera',         icon: Ticket },
+      { to: '/gestion/fidelizacion', label: 'Fidelización',     icon: Star },
+      { to: '/gestion/prode',        label: 'Prode Mundial',    icon: Trophy },
     ]
   },
   {
     label: 'Finanzas & Datos',
     adminOnly: true,
     items: [
-      { to: '/caja',         label: 'Caja',             icon: Wallet },
-      { to: '/finanzas',     label: 'Finanzas',         icon: PiggyBank },
-      { to: '/reportes',     label: 'Reportes',         icon: BarChart2 },
-      { to: '/analytics',    label: 'Inteligencia',     icon: Brain },
-      { to: '/churn-job',    label: 'Alerta de Churn',  icon: Smartphone },
-      { to: '/rechazados',   label: 'Rechazados',        icon: XCircle },
+      { to: '/gestion/caja',         label: 'Caja',             icon: Wallet },
+      { to: '/gestion/finanzas',     label: 'Finanzas',         icon: PiggyBank },
+      { to: '/gestion/reportes',     label: 'Reportes',         icon: BarChart2 },
+      { to: '/gestion/analytics',    label: 'Inteligencia',     icon: Brain },
+      { to: '/gestion/churn-job',    label: 'Alerta de Churn',  icon: Smartphone },
+      { to: '/gestion/rechazados',   label: 'Rechazados',       icon: XCircle },
     ]
   },
   {
     label: 'Sistema',
     adminOnly: true,
     items: [
-      { to: '/usuarios',     label: 'Usuarios',         icon: UserCog },
-      { to: '/gastos',       label: 'Gastos Variables',  icon: Receipt },
-      { to: '/recetas',      label: 'Editor de Recetas', icon: FlaskConical },
-      { to: '/configuracion',label: 'Configuración',    icon: Settings },
+      { to: '/gestion/usuarios',      label: 'Usuarios',         icon: UserCog },
+      { to: '/gestion/gastos',        label: 'Gastos Variables', icon: Receipt },
+      { to: '/gestion/recetas',       label: 'Editor de Recetas',icon: FlaskConical },
+      { to: '/gestion/configuracion', label: 'Configuración',    icon: Settings },
     ]
   },
 ];
 
-// ── Panel de alertas de stock ─────────────────────────────────────────────────
 function AlertsPanel({ onClose }) {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +92,6 @@ function AlertsPanel({ onClose }) {
       zIndex: 300, display: 'flex', flexDirection: 'column',
       boxShadow: '-4px 0 24px rgba(0,0,0,0.5)'
     }}>
-      {/* Header */}
       <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -116,7 +114,6 @@ function AlertsPanel({ onClose }) {
         </div>
       </div>
 
-      {/* Lista */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>
@@ -128,7 +125,6 @@ function AlertsPanel({ onClose }) {
           </div>
         ) : (
           <>
-            {/* Sin revisar */}
             {unseen.length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
@@ -139,8 +135,6 @@ function AlertsPanel({ onClose }) {
                 ))}
               </div>
             )}
-
-            {/* Ya vistas */}
             {seen.length > 0 && (
               <div>
                 <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--gray)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
@@ -155,9 +149,9 @@ function AlertsPanel({ onClose }) {
         )}
       </div>
 
-      {/* Footer */}
       <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)' }}>
-        <NavLink to="/stock" onClick={onClose}
+        {/* ← CAMBIO: /stock → /gestion/stock */}
+        <NavLink to="/gestion/stock" onClick={onClose}
           style={{ display: 'block', textAlign: 'center', background: 'var(--gold)', color: '#000', padding: '10px', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}>
           Ir al panel de Stock →
         </NavLink>
@@ -207,7 +201,6 @@ function AlertItem({ alert, onDismiss, seen }) {
   );
 }
 
-// ── Layout principal ──────────────────────────────────────────────────────────
 export default function Layout() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -231,22 +224,20 @@ export default function Layout() {
     return () => clearInterval(interval);
   }, [isAdmin]);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  // ← CAMBIO: /login → /gestion/login
+  const handleLogout = () => { logout(); navigate('/gestion/login'); };
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className="layout">
-      {/* Overlay sidebar mobile */}
       <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={closeSidebar} />
 
-      {/* Overlay panel de alertas */}
       {showAlerts && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 299 }}
           onClick={() => setShowAlerts(false)} />
       )}
       {showAlerts && <AlertsPanel onClose={() => setShowAlerts(false)} />}
 
-      {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontFamily: 'Bebas Neue', fontSize: '1.8rem', color: 'white' }}>
@@ -257,7 +248,6 @@ export default function Layout() {
           </button>
         </div>
 
-        {/* Banner de alertas de stock en sidebar */}
         {isAdmin && unseenCount > 0 && (
           <button onClick={() => { setShowAlerts(true); closeSidebar(); }}
             style={{ margin: '0 12px 12px', width: 'calc(100% - 24px)', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, textAlign: 'left' }}>
@@ -277,7 +267,7 @@ export default function Layout() {
                 <div className="nav-section-label">{group.label}</div>
                 {group.items.map(item => {
                   if (item.adminOnly && !isAdmin) return null;
-                  const showBadge = item.to === '/stock' && lowStockCount > 0;
+                  const showBadge = item.to === '/gestion/stock' && lowStockCount > 0;
                   return (
                     <NavLink
                       key={item.to}
@@ -314,13 +304,10 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="main-content">
         <div className="mobile-topbar">
           <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button>
           <span className="mobile-topbar-title">🍔 JANZ</span>
-
-          {/* Campana de alertas en mobile */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {isAdmin && unseenCount > 0 && (
               <button onClick={() => setShowAlerts(true)}
