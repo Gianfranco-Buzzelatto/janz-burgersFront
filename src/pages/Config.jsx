@@ -28,6 +28,7 @@ export default function Config() {
   // formularios locales
   const [alias, setAlias] = useState('');
   const [notesPlaceholder, setNotesPlaceholder] = useState('Aclaraciones, alergias...');
+  const [deleteOrderPassword, setDeleteOrderPassword] = useState('janz2024');
   const [schedule, setSchedule] = useState({ days: [5, 6, 0], openHour: '19:00', closeHour: '23:00' });
   const [zones, setZones] = useState([]);
   const [newZone, setNewZone] = useState({ name: '', cost: '', freeFrom: '' });
@@ -622,6 +623,30 @@ export default function Config() {
           }} disabled={saving === 'orderLimits'}>
             <Save size={15} /> {saving === 'orderLimits' ? 'Guardando...' : 'Guardar límites'}
           </button>
+        </Section>
+
+      {/* Contraseña para eliminar pedidos */}
+        <Section title="Seguridad" icon={Lock}>
+          <p style={{ color: 'var(--gray)', fontSize: '0.85rem', marginBottom: 14 }}>
+            Contraseña requerida para eliminar pedidos del historial.
+          </p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <input
+              type="password"
+              value={deleteOrderPassword}
+              onChange={e => setDeleteOrderPassword(e.target.value)}
+              placeholder="Contraseña para eliminar pedidos"
+              style={{ flex: 1 }}
+            />
+            <button className="btn btn-primary" onClick={async () => {
+              setSaving('deletePass');
+              try { await API.put('/config/deleteOrderPassword', { value: deleteOrderPassword }); toast.success('Contraseña actualizada'); }
+              catch { toast.error('Error'); }
+              finally { setSaving(''); }
+            }} disabled={saving === 'deletePass'}>
+              <Save size={15} /> {saving === 'deletePass' ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
         </Section>
 
       </div>

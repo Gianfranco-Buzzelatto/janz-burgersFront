@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Trash2 } from 'lucide-react';
 import API from '../utils/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -191,6 +191,9 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(null); // order a eliminar
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [filter, setFilter] = useState('all');
   const { isAdmin } = useAuth();
 
@@ -200,6 +203,20 @@ export default function Orders() {
   };
 
   useEffect(() => { fetchOrders(); }, [filter]);
+
+  const handleDelete = async () => {
+    if (!deleteModal) return;
+    setDeleting(true);
+    try {
+      await API.delete(`/orders/${deleteModal._id}`, { data: { password: deletePassword } });
+      setOrders(prev => prev.filter(o => o._id !== deleteModal._id));
+      toast.success(`Pedido ${deleteModal.orderNumber} eliminado`);
+      setDeleteModal(null);
+      setDeletePassword('');
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Error al eliminar');
+    } finally { setDeleting(false); }
+  };
 
   const statusOptions = ['all', 'pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled'];
 
@@ -234,6 +251,7 @@ export default function Orders() {
                   <th>Pago</th>
                   <th>Estado</th>
                   <th>Fecha</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -255,6 +273,12 @@ export default function Orders() {
                     <td className="capitalize text-sm text-gray">{o.paymentMethod}</td>
                     <td><span className={`badge badge-${o.status}`}>{STATUS_LABELS[o.status]}</span></td>
                     <td className="text-sm text-gray">{new Date(o.createdAt).toLocaleDateString('es-AR')}</td>
+                    <td>
+                      <button className="btn-icon" style={{ color: 'var(--red)' }} title="Eliminar pedido"
+                        onClick={() => { setDeleteModal(o); setDeletePassword(''); }}>
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -264,6 +288,40 @@ export default function Orders() {
       </div>
 
       {showModal && <NewOrderModal onClose={() => setShowModal(false)} onCreated={o => setOrders(prev => [o, ...prev])} />}
+
+      {/* Modal eliminar con contraseña */}
+      {deleteModal && (
+        <div className="modal-overlay" onClick={() => setDeleteModal(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🗑️ Eliminar pedido</h3>
+              <button className="btn-icon" onClick={() => setDeleteModal(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: 'var(--gray)', fontSize: '0.875rem', marginBottom: 16 }}>
+                Estás por eliminar el pedido <strong style={{ color: 'var(--gold)' }}>{deleteModal.orderNumber}</strong> de <strong>{deleteModal.client?.name}</strong>. Esta acción no se puede deshacer.
+              </p>
+              <div className="form-group">
+                <label>Contraseña de administrador</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)}
+                  placeholder="Ingresá la contraseña"
+                  onKeyDown={e => e.key === 'Enter' && handleDelete()}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setDeleteModal(null)}>Cancelar</button>
+              <button className="btn btn-danger" onClick={handleDelete} disabled={deleting || !deletePassword}>
+                {deleting ? 'Eliminando...' : '🗑️ Eliminar pedido'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

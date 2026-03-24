@@ -138,6 +138,9 @@ export default function PublicOrder() {
   const [step, setStep] = useState('menu');
   const [loading, setLoading] = useState(true);
   const [systemDown, setSystemDown] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    try { return !localStorage.getItem('janz_visited'); } catch { return false; }
+  });
   const [limits, setLimits] = useState({ enabled: false, limitReached: false, dailyMax: 50, todayCount: 0 });
   const [businessWhatsapp, setBusinessWhatsapp] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -279,6 +282,11 @@ export default function PublicOrder() {
     finally { setSubmitting(false); }
   };
 
+  const closeWelcome = () => {
+    try { localStorage.setItem('janz_visited', '1'); } catch {}
+    setShowWelcome(false);
+  };
+
   if (loading) return <div style={{ minHeight: '100vh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner" /></div>;
 
   if (systemDown) return (
@@ -347,354 +355,407 @@ export default function PublicOrder() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080808', color: 'white', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-
-      <style>{`
-        .janz-hero { position: relative; height: 300px; overflow: hidden; }
-        .janz-hero-content { position: absolute; bottom: 24px; left: 20px; right: 20px; }
-        .janz-hero-prode { display: none; }
-        .janz-prode-mobile { display: block; }
-        .janz-menu-wrap { max-width: 560px; width: 100%; margin: 0 auto; padding: 16px 16px 120px; }
-        .janz-desktop-layout { display: block; }
-        .janz-sidebar { display: none; }
-        .janz-cart-float { display: block; }
-        .janz-product-card { flex-direction: column; height: auto; }
-        .janz-product-img-wrap { width: 100%; height: 180px; flex-shrink: 0; overflow: hidden; position: relative; }
-        .janz-product-card { display: flex; flex-direction: column; }
-        @media (min-width: 900px) {
-          .janz-hero { height: 360px; }
-          .janz-hero-content { bottom: 40px; left: 48px; right: 48px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
-          .janz-hero-left { flex: 1; }
-          .janz-hero-prode { display: block; width: 300px; flex-shrink: 0; }
-          .janz-prode-mobile { display: none; }
-          .janz-menu-wrap { max-width: 1100px; padding: 24px 24px 60px; }
-          .janz-desktop-layout { display: grid; grid-template-columns: 1fr 320px; gap: 0; }
-          .janz-menu-col { padding-right: 24px; }
-          .janz-sidebar { display: block; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 24px; }
-          .janz-cart-float { display: none; }
-          .janz-product-card { flex-direction: row; min-height: 130px; align-items: stretch; }
-          .janz-product-img-wrap { width: 140px; align-self: stretch; flex-shrink: 0; height: auto; position: relative; }
-          .janz-product-img-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        }
-      `}</style>
-
-      {/* Hero — responsive */}
-      <div className="janz-hero">
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${heroBurger})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.35)' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.55) 55%, #080808 100%)' }} />
-        <div style={{ position: 'absolute', top: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
-          <img src={logoJanz} alt="Janz" style={{ height: 64, objectFit: 'contain', opacity: 0.95 }} />
-        </div>
-        <div className="janz-hero-content">
-          <div className="janz-hero-left">
-            <div style={{ fontSize: 'clamp(2rem, 7vw, 3.8rem)', fontWeight: 900, lineHeight: 1, letterSpacing: '-2px', color: 'white' }}>
-              PEDÍ. DISFRUTÁ.<br /><span style={{ color: '#E8B84B' }}>REPETÍ.</span>
+    <>
+      {/* Modal bienvenida — solo primera visita */}
+      {showWelcome && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+          <div style={{ background: '#111', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 480, padding: '28px 24px 36px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>🍔</div>
+              <div style={{ fontFamily: 'Bebas Neue', fontSize: '1.8rem', color: '#E8B84B', marginBottom: 4 }}>Bienvenido a Janz Burgers!</div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>Así funciona el sistema de pedidos</div>
             </div>
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', lineHeight: 1.6, marginTop: 10, marginBottom: 10, maxWidth: 420 }}>
-              Emprendimos y crecimos para romper el molde. <br /> Pan artesanal sin conservantes hecho por nosotros, ingredientes de calidad para un excelente producto y un sabor con identidad.
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <a href="https://www.instagram.com/janz.burgers" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '0.78rem' }}>
-                <Instagram size={12} /> @janz.burgers
-              </a>
-              <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
-              <span style={{ fontSize: '0.75rem', color: open ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{open ? '● Abierto' : '● Cerrado'}</span>
-            </div>
-          </div>
-          {/* Prode en desktop dentro del hero */}
-          <div className="janz-hero-prode">
-            {prodeEnabled && step === 'menu' && (
-              <div style={{ background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.25)', borderRadius: 14, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 40, height: 40, background: 'rgba(232,184,75,0.12)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🏆</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#E8B84B' }}>Prode Mundial 2026</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Pronosticá y ganá premios</div>
-                  </div>
+            {[
+              { icon: '🍔', title: 'Elegí tus hamburguesas', desc: 'Navegá el menú y tocá "Agregar" en las que quieras. Podés elegir Simple, Doble o Triple.' },
+              { icon: '➕', title: 'Sumá adicionales', desc: 'Agregá extras como panceta, huevo, queso y más desde la sección de adicionales.' },
+              { icon: '🛒', title: 'Revisá tu pedido', desc: 'Tocá el botón del carrito para ver el resumen, elegir zona de envío y método de pago.' },
+              { icon: '📱', title: 'Confirmá y listo', desc: 'Completá tus datos y enviá el pedido. Te avisamos por WhatsApp en cada paso.' },
+            ].map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 20, alignItems: 'flex-start' }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(232,184,75,0.1)', border: '1px solid rgba(232,184,75,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
+                  {s.icon}
                 </div>
-                <a href={`/prode-publico${clientId ? `?clientId=${clientId}` : ''}`} style={{ background: '#E8B84B', color: '#000', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}>Jugar →</a>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Banner Prode — solo móvil, en desktop va dentro del hero */}
-      {prodeEnabled && step === 'menu' && (
-        <div className="janz-prode-mobile" style={{ padding: '12px 16px 0' }}>
-          <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 14, padding: '13px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, background: 'rgba(232,184,75,0.12)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏆</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#E8B84B', lineHeight: 1 }}>Prode Mundial 2026</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Pronosticá y ganá premios</div>
-              </div>
-            </div>
-            <a href={`/prode-publico${clientId ? `?clientId=${clientId}` : ''}`} style={{ background: '#E8B84B', color: '#000', borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>Jugar →</a>
-          </div>
-        </div>
-      )}
-
-      {additionalsModal && <AdditionalsModal product={additionalsModal} availableAdditionals={availableAdditionals} onConfirm={handleAdditionalsConfirm} onClose={() => setAdditionalsModal(null)} />}
-
-      {step === 'form' ? (
-        <div style={{ maxWidth: 520, width: '100%', margin: '0 auto', padding: '20px 16px 100px' }}>
-          <button onClick={() => setStep('menu')} style={{ background: 'none', border: 'none', color: '#E8B84B', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', marginBottom: 20, padding: 0 }}>
-            ← Volver al menú
-          </button>
-          <div style={{ background: '#0f0f0f', borderRadius: 16, border: '1px solid rgba(255,255,255,0.06)', padding: 24 }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', marginBottom: 20, letterSpacing: '-0.5px' }}>Tus datos</div>
-
-            {hourlyDiscount?.enabled && (
-              <div style={{ marginBottom: 18, padding: '12px 16px', borderRadius: 12, background: inDiscountWindow ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${inDiscountWindow ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.07)'}`, transition: 'all 0.4s' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    {inDiscountWindow ? (<><div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.9rem' }}>🎉 ¡Estás en horario de descuento!</div><div style={{ fontSize: '0.76rem', color: '#86efac', marginTop: 3 }}>{hourlyDiscount.discountPercent}% off aplicado</div></>) : (<><div style={{ fontWeight: 600, color: '#aaa', fontSize: '0.85rem' }}>⏰ {hourlyDiscount.discountPercent}% off entre {hourlyDiscount.fromHour} y {hourlyDiscount.toHour}hs</div><div style={{ fontSize: '0.73rem', color: '#444', marginTop: 3 }}>Pedí en ese horario para obtenerlo</div></>)}
-                  </div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '1.3rem', color: inDiscountWindow ? '#22c55e' : '#333', fontWeight: 700, marginLeft: 12 }}>{currentTime}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 3 }}>{s.title}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem', lineHeight: 1.5 }}>{s.desc}</div>
                 </div>
               </div>
-            )}
-
-            <div style={{ marginBottom: 18 }}>
-              <div style={labelStyle}>Tipo de entrega *</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ v: 'delivery', l: '🛵 Delivery' }, { v: 'takeaway', l: '🥡 Take Away' }].map(({ v, l }) => (
-                  <button key={v} onClick={() => setDeliveryType(v)} style={{ flex: 1, padding: '12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', border: 'none', fontSize: '0.88rem', transition: 'all 0.2s', background: deliveryType === v ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: deliveryType === v ? '#000' : '#555' }}>{l}</button>
-                ))}
-              </div>
-            </div>
-
-            {deliveryType === 'delivery' && zones.length > 0 && (
-              <div style={{ marginBottom: 18 }}>
-                <div style={labelStyle}>Zona de delivery *</div>
-                {zones.map(zone => {
-                  const isFree = zone.freeFrom > 0 && total >= zone.freeFrom;
-                  const cost = isFree ? 0 : zone.cost;
-                  return (
-                    <button key={zone.id} onClick={() => setSelectedZone(zone.id)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px 14px', borderRadius: 10, marginBottom: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem', transition: 'all 0.2s', background: selectedZone === zone.id ? 'rgba(232,184,75,0.1)' : 'rgba(255,255,255,0.04)', color: selectedZone === zone.id ? '#E8B84B' : '#666', outline: selectedZone === zone.id ? '1.5px solid rgba(232,184,75,0.4)' : 'none' }}>
-                      <span>📍 {zone.name}</span>
-                      <span style={{ fontSize: '0.82rem', color: cost === 0 ? '#22c55e' : '#555' }}>{cost === 0 ? (isFree ? '¡Gratis! 🎉' : 'Gratis') : fmt(cost)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            <div style={{ marginBottom: 14 }}><label style={labelStyle}>Nombre y apellido *</label><input value={client.name} onChange={e => setClient(c => ({ ...c, name: e.target.value }))} placeholder="Tu nombre completo" style={inputStyle} /></div>
-            <div style={{ marginBottom: 14 }}><label style={labelStyle}>WhatsApp *</label><input value={client.whatsapp} onChange={e => setClient(c => ({ ...c, whatsapp: e.target.value }))} placeholder="Ej: 1123456789" type="tel" style={inputStyle} /></div>
-
-            {deliveryType === 'delivery' && (
-              <>
-                <div style={{ marginBottom: 14 }}><label style={labelStyle}>Dirección *</label><input value={client.address} onChange={e => setClient(c => ({ ...c, address: e.target.value }))} placeholder="Calle y número" style={inputStyle} /></div>
-                <div style={{ marginBottom: 14 }}><label style={labelStyle}>Piso / Depto</label><input value={client.floor} onChange={e => setClient(c => ({ ...c, floor: e.target.value }))} placeholder="Ej: 3° B" style={inputStyle} /></div>
-                <div style={{ marginBottom: 14 }}><label style={labelStyle}>Referencias</label><input value={client.references} onChange={e => setClient(c => ({ ...c, references: e.target.value }))} placeholder="Portón verde, timbre 2B..." style={inputStyle} /></div>
-              </>
-            )}
-
-            <div style={{ marginBottom: 18 }}>
-              <div style={labelStyle}>Método de pago *</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[{ value: 'efectivo', label: '💵 Efectivo' }, { value: 'transferencia', label: '🏦 Transferencia' }].map(m => (
-                  <button key={m.value} onClick={() => setPaymentMethod(m.value)} style={{ flex: 1, padding: '12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', border: 'none', transition: 'all 0.2s', background: paymentMethod === m.value ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: paymentMethod === m.value ? '#000' : '#555' }}>{m.label}</button>
-                ))}
-              </div>
-              {paymentMethod === 'transferencia' && (
-                <div style={{ marginTop: 10, padding: '10px 14px', background: 'rgba(232,184,75,0.06)', borderRadius: 10, fontSize: '0.8rem', color: '#666', border: '1px solid rgba(232,184,75,0.12)' }}>
-                  📲 Enviá el comprobante por WhatsApp.{transferAlias && <span style={{ color: '#E8B84B', fontWeight: 700, display: 'block', marginTop: 4 }}>Alias: {transferAlias}</span>}
-                </div>
-              )}
-            </div>
-
-            {(() => {
-              const openStr  = `${String(schedule.openHour  || 19).padStart(2,'0')}:00`;
-              const closeStr = `${String(schedule.closeHour || 23).padStart(2,'0')}:00`;
-              const isOutsideHours = scheduledFor !== 'asap' && (scheduledFor < openStr || scheduledFor > closeStr);
-              return (
-                <div style={{ marginBottom: 18 }}>
-                  <div style={labelStyle}>⏰ ¿Cuándo lo querés?</div>
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                    <button onClick={() => setScheduledFor('asap')} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', transition: 'all 0.2s', background: scheduledFor === 'asap' ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: scheduledFor === 'asap' ? '#000' : '#555' }}>🚀 Lo antes posible</button>
-                    <button onClick={() => setScheduledFor(scheduledFor === 'asap' ? openStr : scheduledFor)} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', transition: 'all 0.2s', background: scheduledFor !== 'asap' ? 'rgba(232,184,75,0.1)' : 'rgba(255,255,255,0.05)', color: scheduledFor !== 'asap' ? '#E8B84B' : '#555', outline: scheduledFor !== 'asap' ? '1.5px solid rgba(232,184,75,0.3)' : 'none' }}>🕐 Programar</button>
-                  </div>
-                  {scheduledFor !== 'asap' && (
-                    <div>
-                      <input type="time" value={scheduledFor} min={openStr} max={closeStr} onChange={e => setScheduledFor(e.target.value)} style={{ ...inputStyle, textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, borderColor: isOutsideHours ? '#ef4444' : 'rgba(255,255,255,0.1)' }} />
-                      {isOutsideHours
-                        ? <div style={{ marginTop: 8, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, fontSize: '0.8rem', color: '#fca5a5' }}>⚠️ Fuera del horario comercial ({openStr} a {closeStr}hs)</div>
-                        : <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, fontSize: '0.76rem', color: '#444' }}>✓ Programado para las {scheduledFor}hs</div>
-                      }
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            <div style={{ marginBottom: 18 }}><label style={labelStyle}>Notas del pedido</label><textarea value={client.notes} onChange={e => setClient(c => ({ ...c, notes: e.target.value }))} placeholder={notesPlaceholder} rows={2} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} /></div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={labelStyle}>🎟️ Cupón de descuento</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <input value={couponCode} onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); }} placeholder="Ej: JANZ10" style={{ ...inputStyle, border: `1px solid ${couponStatus?.valid ? 'rgba(34,197,94,0.4)' : couponStatus?.valid === false ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}` }} />
-                <button onClick={validateCoupon} disabled={validatingCoupon || !couponCode.trim()} style={{ background: 'rgba(232,184,75,0.1)', color: '#E8B84B', border: '1px solid rgba(232,184,75,0.3)', padding: '10px 16px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                  {validatingCoupon ? '...' : 'Aplicar'}
-                </button>
-              </div>
-              {couponStatus && <div style={{ marginTop: 6, fontSize: '0.8rem', color: couponStatus.valid ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{couponStatus.valid ? '✅' : '❌'} {couponStatus.message}</div>}
-            </div>
-
-            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 16, marginBottom: 20, border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ fontWeight: 700, marginBottom: 12, color: '#E8B84B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Resumen del pedido</div>
-              {cart.map((i, idx) => (
-                <div key={idx} style={{ marginBottom: 8 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
-                    <span style={{ color: '#777' }}>{i.productName} {i.variant} ×{i.quantity}</span>
-                    <span style={{ color: 'white', fontWeight: 600 }}>{fmt(i.unitPrice * i.quantity)}</span>
-                  </div>
-                  {(i.additionals || []).map((a, ai) => (
-                    <div key={ai} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', color: '#444', paddingLeft: 12, marginTop: 2 }}>
-                      <span>+ {a.name} ×{a.quantity}</span><span>+ {fmt(a.unitPrice * a.quantity)}</span>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 10, paddingTop: 10 }}>
-                {deliveryCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4, color: '#444' }}><span>Delivery</span><span>{fmt(deliveryCost)}</span></div>}
-                {discount > 0 && (<><div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4, color: '#444' }}><span>Subtotal</span><span>{fmt(total)}</span></div><div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 6, color: '#22c55e' }}><span>{couponStatus?.valid ? `🎟️ Cupón ${couponStatus.discountPercent}%` : `🎉 Descuento ${activeDiscountPercent}%`}</span><span>- {fmt(discount)}</span></div></>)}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700, color: '#E8B84B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total</span>
-                  <span style={{ color: 'white', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{fmt(totalWithDiscount)}</span>
-                </div>
-              </div>
-            </div>
-
-            <button onClick={handleSubmit} disabled={submitting} style={{ width: '100%', background: submitting ? '#222' : '#E8B84B', color: submitting ? '#555' : '#000', border: 'none', padding: '15px', borderRadius: 12, fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '1rem', letterSpacing: '0.02em', transition: 'all 0.2s' }}>
-              {submitting ? 'Enviando...' : `Confirmar pedido — ${fmt(totalWithDiscount)}`}
+            ))}
+            <button onClick={closeWelcome} style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #c49b35, #E8B84B)', color: '#000', border: 'none', borderRadius: 12, fontWeight: 800, fontSize: '1rem', cursor: 'pointer', marginTop: 8 }}>
+              Empezar a pedir!
             </button>
           </div>
         </div>
+      )}
 
-      ) : (
-        <div className="janz-menu-wrap">
-          {!open && (
-            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '13px 16px', marginBottom: 16, color: '#ef4444', textAlign: 'center', fontWeight: 600, fontSize: '0.88rem' }}>
-              🔴 En este momento no estamos tomando pedidos
+      <div style={{ minHeight: '100vh', background: '#080808', color: 'white', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+
+        <style>{`
+          .janz-hero { position: relative; height: 300px; overflow: hidden; }
+          .janz-hero-content { position: absolute; bottom: 24px; left: 20px; right: 20px; }
+          .janz-hero-prode { display: none; }
+          .janz-prode-mobile { display: block; }
+          .janz-menu-wrap { max-width: 560px; width: 100%; margin: 0 auto; padding: 16px 16px 120px; }
+          .janz-desktop-layout { display: block; }
+          .janz-sidebar { display: none; }
+          .janz-cart-float { display: block; }
+          .janz-product-card { flex-direction: column; height: auto; }
+          .janz-product-img-wrap { width: 100%; height: 180px; flex-shrink: 0; overflow: hidden; position: relative; }
+          .janz-product-card { display: flex; flex-direction: column; }
+          @media (min-width: 900px) {
+            .janz-hero { height: 360px; }
+            .janz-hero-content { bottom: 40px; left: 48px; right: 48px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
+            .janz-hero-left { flex: 1; }
+            .janz-hero-prode { display: block; width: 300px; flex-shrink: 0; }
+            .janz-prode-mobile { display: none; }
+            .janz-menu-wrap { max-width: 1100px; padding: 24px 24px 60px; }
+            .janz-desktop-layout { display: grid; grid-template-columns: 1fr 320px; gap: 0; }
+            .janz-menu-col { padding-right: 24px; }
+            .janz-sidebar { display: block; border-left: 1px solid rgba(255,255,255,0.05); padding-left: 24px; }
+            .janz-cart-float { display: none; }
+            .janz-product-card { flex-direction: row; min-height: 130px; align-items: stretch; }
+            .janz-product-img-wrap { width: 140px; align-self: stretch; flex-shrink: 0; height: auto; position: relative; }
+            .janz-product-img-wrap img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+          }
+        `}</style>
+
+        {/* Hero — responsive */}
+        <div className="janz-hero">
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${heroBurger})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'brightness(0.35)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.55) 55%, #080808 100%)' }} />
+          <div style={{ position: 'absolute', top: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+            <img src={logoJanz} alt="Janz" style={{ height: 64, objectFit: 'contain', opacity: 0.95 }} />
+          </div>
+          <div className="janz-hero-content">
+            <div className="janz-hero-left">
+              <div style={{ fontSize: 'clamp(2rem, 7vw, 3.8rem)', fontWeight: 900, lineHeight: 1, letterSpacing: '-2px', color: 'white' }}>
+                PEDÍ. DISFRUTÁ.<br /><span style={{ color: '#E8B84B' }}>REPETÍ.</span>
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', lineHeight: 1.6, marginTop: 10, marginBottom: 10, maxWidth: 420 }}>
+                Emprendimos y crecimos para romper el molde. <br /> Pan artesanal sin conservantes hecho por nosotros, ingredientes de calidad para un excelente producto y un sabor con identidad.
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <a href="https://www.instagram.com/janz.burgers" target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '0.78rem' }}>
+                  <Instagram size={12} /> @janz.burgers
+                </a>
+                <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
+                <span style={{ fontSize: '0.75rem', color: open ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{open ? '● Abierto' : '● Cerrado'}</span>
+              </div>
             </div>
-          )}
-
-          <div className="janz-desktop-layout">
-            {/* Columna menú */}
-            <div className="janz-menu-col">
-              {Object.entries(menu).map(([name, variants]) => {
-                const order = { Simple: 0, Doble: 1, Triple: 2 };
-                const sortedVariants = [...variants].sort((a, b) => (order[a.variant] ?? 99) - (order[b.variant] ?? 99));
-                const description = sortedVariants[0]?.description;
-                const image = variants.find(v => v.image)?.image;
-                return (
-                  <div key={name} className="janz-product-card" style={{ marginBottom: 14, background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden', display: 'flex' }}>
-                    <div className="janz-product-img-wrap">
-                      {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', minHeight: '100%' }} /> : <div style={{ width: '100%', height: '100%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🍔</div>}
-                    </div>
-                    {/* Info */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                      <div style={{ padding: '14px 16px 6px' }}>
-                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#E8B84B', lineHeight: 1, letterSpacing: '-0.3px' }}>{name}</div>
-                        {description && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.76rem', fontWeight: 600, marginTop: 5, lineHeight: 1.5 }}>{description}</div>}
-                      </div>
-                      <div style={{ padding: '4px 0 8px' }}>
-                        {sortedVariants.map((p, idx) => {
-                          const inCart = cart.find(i => i.product === p._id);
-                          const unavailable = !p.available;
-                          return (
-                            <div key={p._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 16px', borderTop: idx > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: unavailable ? 0.4 : 1 }}>
-                              <div>
-                                <div style={{ fontWeight: 700, color: 'white', fontSize: '0.9rem' }}>{p.variant}{unavailable && <span style={{ color: '#ef4444', fontSize: '0.65rem', marginLeft: 8, fontWeight: 500 }}>NO DISPONIBLE</span>}</div>
-                                <div style={{ color: '#E8B84B', fontWeight: 800, fontSize: '0.95rem', marginTop: 2 }}>{fmt(p.salePrice)}</div>
-                              </div>
-                              {!unavailable && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                  {inCart ? (
-                                    <>
-                                      <button onClick={() => removeFromCart(p._id)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', border: 'none', color: 'white', fontSize: '1rem', cursor: 'pointer' }}>−</button>
-                                      <span style={{ fontWeight: 800, minWidth: 18, textAlign: 'center', color: 'white', fontSize: '0.95rem' }}>{inCart.quantity}</span>
-                                      <button onClick={() => handleAddToCart(p)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#E8B84B', border: 'none', color: '#000', fontSize: '1rem', cursor: 'pointer', fontWeight: 800 }}>+</button>
-                                    </>
-                                  ) : (
-                                    <button onClick={() => handleAddToCart(p)} style={{ background: '#E8B84B', color: '#000', border: 'none', padding: '8px 18px', borderRadius: 9, fontWeight: 800, cursor: 'pointer', fontSize: '0.85rem' }}>Agregar</button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
+            {/* Prode en desktop dentro del hero */}
+            <div className="janz-hero-prode">
+              {prodeEnabled && step === 'menu' && (
+                <div style={{ background: 'rgba(232,184,75,0.08)', border: '1px solid rgba(232,184,75,0.25)', borderRadius: 14, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 40, height: 40, background: 'rgba(232,184,75,0.12)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>🏆</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#E8B84B' }}>Prode Mundial 2026</div>
+                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Pronosticá y ganá premios</div>
                     </div>
                   </div>
-                );
-              })}
+                  <a href={`/prode-publico${clientId ? `?clientId=${clientId}` : ''}`} style={{ background: '#E8B84B', color: '#000', borderRadius: 8, padding: '9px 14px', fontSize: 12, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap' }}>Jugar →</a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-              {availableAdditionals.length > 0 && (
-                <div style={{ marginBottom: 40 }}>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#2a2a2a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Adicionales</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {availableAdditionals.map(add => (
-                      <div key={add._id} style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: '11px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div><span style={{ color: '#888', fontWeight: 600, fontSize: '0.88rem' }}>{add.emoji} {add.name}</span>{add.description && <span style={{ color: '#2a2a2a', fontSize: '0.75rem', marginLeft: 8 }}>{add.description}</span>}</div>
-                        <span style={{ color: '#E8B84B', fontWeight: 700, fontSize: '0.9rem' }}>{fmt(add.price)}</span>
-                      </div>
-                    ))}
+        {/* Banner Prode — solo móvil, en desktop va dentro del hero */}
+        {prodeEnabled && step === 'menu' && (
+          <div className="janz-prode-mobile" style={{ padding: '12px 16px 0' }}>
+            <div style={{ background: 'rgba(232,184,75,0.06)', border: '1px solid rgba(232,184,75,0.2)', borderRadius: 14, padding: '13px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, background: 'rgba(232,184,75,0.12)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🏆</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#E8B84B', lineHeight: 1 }}>Prode Mundial 2026</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 2 }}>Pronosticá y ganá premios</div>
+                </div>
+              </div>
+              <a href={`/prode-publico${clientId ? `?clientId=${clientId}` : ''}`} style={{ background: '#E8B84B', color: '#000', borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 800, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>Jugar →</a>
+            </div>
+          </div>
+        )}
+
+        {additionalsModal && <AdditionalsModal product={additionalsModal} availableAdditionals={availableAdditionals} onConfirm={handleAdditionalsConfirm} onClose={() => setAdditionalsModal(null)} />}
+
+        {step === 'form' ? (
+          <div style={{ maxWidth: 520, width: '100%', margin: '0 auto', padding: '20px 16px 100px' }}>
+            <button onClick={() => setStep('menu')} style={{ background: 'none', border: 'none', color: '#E8B84B', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', marginBottom: 20, padding: 0 }}>
+              ← Volver al menú
+            </button>
+            <div style={{ background: '#0f0f0f', borderRadius: 16, border: '1px solid rgba(255,255,255,0.06)', padding: 24 }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'white', marginBottom: 20, letterSpacing: '-0.5px' }}>Tus datos</div>
+
+              {hourlyDiscount?.enabled && (
+                <div style={{ marginBottom: 18, padding: '12px 16px', borderRadius: 12, background: inDiscountWindow ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${inDiscountWindow ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.07)'}`, transition: 'all 0.4s' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      {inDiscountWindow ? (<><div style={{ fontWeight: 700, color: '#22c55e', fontSize: '0.9rem' }}>🎉 ¡Estás en horario de descuento!</div><div style={{ fontSize: '0.76rem', color: '#86efac', marginTop: 3 }}>{hourlyDiscount.discountPercent}% off aplicado</div></>) : (<><div style={{ fontWeight: 600, color: '#aaa', fontSize: '0.85rem' }}>⏰ {hourlyDiscount.discountPercent}% off entre {hourlyDiscount.fromHour} y {hourlyDiscount.toHour}hs</div><div style={{ fontSize: '0.73rem', color: '#444', marginTop: 3 }}>Pedí en ese horario para obtenerlo</div></>)}
+                    </div>
+                    <div style={{ fontFamily: 'monospace', fontSize: '1.3rem', color: inDiscountWindow ? '#22c55e' : '#333', fontWeight: 700, marginLeft: 12 }}>{currentTime}</div>
                   </div>
                 </div>
               )}
 
-              <div style={{ textAlign: 'center', padding: '20px 0 8px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                <img src={logoJanz} alt="Janz" style={{ height: 28, opacity: 0.15, display: 'block', margin: '0 auto 6px' }} />
-                <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.7rem', letterSpacing: '0.05em' }}>Janz Burgers · Pedí, Mordé, Repetí.</div>
+              <div style={{ marginBottom: 18 }}>
+                <div style={labelStyle}>Tipo de entrega *</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{ v: 'delivery', l: '🛵 Delivery' }, { v: 'takeaway', l: '🥡 Take Away' }].map(({ v, l }) => (
+                    <button key={v} onClick={() => setDeliveryType(v)} style={{ flex: 1, padding: '12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', border: 'none', fontSize: '0.88rem', transition: 'all 0.2s', background: deliveryType === v ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: deliveryType === v ? '#000' : '#555' }}>{l}</button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Sidebar carrito — solo desktop */}
-            <div className="janz-sidebar">
-              <div style={{ position: 'sticky', top: 20 }}>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#2a2a2a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>Tu pedido</div>
-                <div style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }}>
-                  {cart.length === 0 ? (
-                    <div style={{ color: '#2a2a2a', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>Agregá productos para empezar</div>
-                  ) : (
-                    <>
-                      {cart.map((item, i) => (
-                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                          <div>
-                            <div style={{ fontSize: '0.85rem', color: '#aaa' }}>{item.productName} {item.variant}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#444', marginTop: 2 }}>×{item.quantity}</div>
-                          </div>
-                          <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>{fmt(itemTotal(item))}</div>
+              {deliveryType === 'delivery' && zones.length > 0 && (
+                <div style={{ marginBottom: 18 }}>
+                  <div style={labelStyle}>Zona de delivery *</div>
+                  {zones.map(zone => {
+                    const isFree = zone.freeFrom > 0 && total >= zone.freeFrom;
+                    const cost = isFree ? 0 : zone.cost;
+                    return (
+                      <button key={zone.id} onClick={() => setSelectedZone(zone.id)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px 14px', borderRadius: 10, marginBottom: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem', transition: 'all 0.2s', background: selectedZone === zone.id ? 'rgba(232,184,75,0.1)' : 'rgba(255,255,255,0.04)', color: selectedZone === zone.id ? '#E8B84B' : '#666', outline: selectedZone === zone.id ? '1.5px solid rgba(232,184,75,0.4)' : 'none' }}>
+                        <span>📍 {zone.name}</span>
+                        <span style={{ fontSize: '0.82rem', color: cost === 0 ? '#22c55e' : '#555' }}>{cost === 0 ? (isFree ? '¡Gratis! 🎉' : 'Gratis') : fmt(cost)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div style={{ marginBottom: 14 }}><label style={labelStyle}>Nombre y apellido *</label><input value={client.name} onChange={e => setClient(c => ({ ...c, name: e.target.value }))} placeholder="Tu nombre completo" style={inputStyle} /></div>
+              <div style={{ marginBottom: 14 }}><label style={labelStyle}>WhatsApp *</label><input value={client.whatsapp} onChange={e => setClient(c => ({ ...c, whatsapp: e.target.value }))} placeholder="Ej: 1123456789" type="tel" style={inputStyle} /></div>
+
+              {deliveryType === 'delivery' && (
+                <>
+                  <div style={{ marginBottom: 14 }}><label style={labelStyle}>Dirección *</label><input value={client.address} onChange={e => setClient(c => ({ ...c, address: e.target.value }))} placeholder="Calle y número" style={inputStyle} /></div>
+                  <div style={{ marginBottom: 14 }}><label style={labelStyle}>Piso / Depto</label><input value={client.floor} onChange={e => setClient(c => ({ ...c, floor: e.target.value }))} placeholder="Ej: 3° B" style={inputStyle} /></div>
+                  <div style={{ marginBottom: 14 }}><label style={labelStyle}>Referencias</label><input value={client.references} onChange={e => setClient(c => ({ ...c, references: e.target.value }))} placeholder="Portón verde, timbre 2B..." style={inputStyle} /></div>
+                </>
+              )}
+
+              <div style={{ marginBottom: 18 }}>
+                <div style={labelStyle}>Método de pago *</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[{ value: 'efectivo', label: '💵 Efectivo' }, { value: 'transferencia', label: '🏦 Transferencia' }].map(m => (
+                    <button key={m.value} onClick={() => setPaymentMethod(m.value)} style={{ flex: 1, padding: '12px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem', border: 'none', transition: 'all 0.2s', background: paymentMethod === m.value ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: paymentMethod === m.value ? '#000' : '#555' }}>{m.label}</button>
+                  ))}
+                </div>
+                {paymentMethod === 'transferencia' && (
+                  <div style={{ marginTop: 10, padding: '10px 14px', background: 'rgba(232,184,75,0.06)', borderRadius: 10, fontSize: '0.8rem', color: '#666', border: '1px solid rgba(232,184,75,0.12)' }}>
+                    📲 Enviá el comprobante por WhatsApp.{transferAlias && <span style={{ color: '#E8B84B', fontWeight: 700, display: 'block', marginTop: 4 }}>Alias: {transferAlias}</span>}
+                  </div>
+                )}
+              </div>
+
+              {(() => {
+                const openStr  = `${String(schedule.openHour  || 19).padStart(2,'0')}:00`;
+                const closeStr = `${String(schedule.closeHour || 23).padStart(2,'0')}:00`;
+                const isOutsideHours = scheduledFor !== 'asap' && (scheduledFor < openStr || scheduledFor > closeStr);
+                return (
+                  <div style={{ marginBottom: 18 }}>
+                    <div style={labelStyle}>⏰ ¿Cuándo lo querés?</div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                      <button onClick={() => setScheduledFor('asap')} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', transition: 'all 0.2s', background: scheduledFor === 'asap' ? '#E8B84B' : 'rgba(255,255,255,0.05)', color: scheduledFor === 'asap' ? '#000' : '#555' }}>🚀 Lo antes posible</button>
+                      <button onClick={() => setScheduledFor(scheduledFor === 'asap' ? openStr : scheduledFor)} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', transition: 'all 0.2s', background: scheduledFor !== 'asap' ? 'rgba(232,184,75,0.1)' : 'rgba(255,255,255,0.05)', color: scheduledFor !== 'asap' ? '#E8B84B' : '#555', outline: scheduledFor !== 'asap' ? '1.5px solid rgba(232,184,75,0.3)' : 'none' }}>🕐 Programar</button>
+                    </div>
+                    {scheduledFor !== 'asap' && (
+                      <div>
+                        <input type="time" value={scheduledFor} min={openStr} max={closeStr} onChange={e => setScheduledFor(e.target.value)} style={{ ...inputStyle, textAlign: 'center', fontSize: '1.1rem', fontWeight: 700, borderColor: isOutsideHours ? '#ef4444' : 'rgba(255,255,255,0.1)' }} />
+                        {isOutsideHours
+                          ? <div style={{ marginTop: 8, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, fontSize: '0.8rem', color: '#fca5a5' }}>⚠️ Fuera del horario comercial ({openStr} a {closeStr}hs)</div>
+                          : <div style={{ marginTop: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, fontSize: '0.76rem', color: '#444' }}>✓ Programado para las {scheduledFor}hs</div>
+                        }
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div style={{ marginBottom: 18 }}><label style={labelStyle}>Notas del pedido</label><textarea value={client.notes} onChange={e => setClient(c => ({ ...c, notes: e.target.value }))} placeholder={notesPlaceholder} rows={2} style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }} /></div>
+
+              <div style={{ marginBottom: 20 }}>
+                <label style={labelStyle}>🎟️ Cupón de descuento</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input value={couponCode} onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponStatus(null); }} placeholder="Ej: JANZ10" style={{ ...inputStyle, border: `1px solid ${couponStatus?.valid ? 'rgba(34,197,94,0.4)' : couponStatus?.valid === false ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}` }} />
+                  <button onClick={validateCoupon} disabled={validatingCoupon || !couponCode.trim()} style={{ background: 'rgba(232,184,75,0.1)', color: '#E8B84B', border: '1px solid rgba(232,184,75,0.3)', padding: '10px 16px', borderRadius: 10, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    {validatingCoupon ? '...' : 'Aplicar'}
+                  </button>
+                </div>
+                {couponStatus && <div style={{ marginTop: 6, fontSize: '0.8rem', color: couponStatus.valid ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{couponStatus.valid ? '✅' : '❌'} {couponStatus.message}</div>}
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 16, marginBottom: 20, border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ fontWeight: 700, marginBottom: 12, color: '#E8B84B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Resumen del pedido</div>
+                {cart.map((i, idx) => (
+                  <div key={idx} style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem' }}>
+                      <span style={{ color: '#777' }}>{i.productName} {i.variant} ×{i.quantity}</span>
+                      <span style={{ color: 'white', fontWeight: 600 }}>{fmt(i.unitPrice * i.quantity)}</span>
+                    </div>
+                    {(i.additionals || []).map((a, ai) => (
+                      <div key={ai} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', color: '#444', paddingLeft: 12, marginTop: 2 }}>
+                        <span>+ {a.name} ×{a.quantity}</span><span>+ {fmt(a.unitPrice * a.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: 10, paddingTop: 10 }}>
+                  {deliveryCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4, color: '#444' }}><span>Delivery</span><span>{fmt(deliveryCost)}</span></div>}
+                  {discount > 0 && (<><div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4, color: '#444' }}><span>Subtotal</span><span>{fmt(total)}</span></div><div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 6, color: '#22c55e' }}><span>{couponStatus?.valid ? `🎟️ Cupón ${couponStatus.discountPercent}%` : `🎉 Descuento ${activeDiscountPercent}%`}</span><span>- {fmt(discount)}</span></div></>)}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 700, color: '#E8B84B', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total</span>
+                    <span style={{ color: 'white', fontSize: '1.3rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{fmt(totalWithDiscount)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={handleSubmit} disabled={submitting} style={{ width: '100%', background: submitting ? '#222' : '#E8B84B', color: submitting ? '#555' : '#000', border: 'none', padding: '15px', borderRadius: 12, fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer', fontSize: '1rem', letterSpacing: '0.02em', transition: 'all 0.2s' }}>
+                {submitting ? 'Enviando...' : `Confirmar pedido — ${fmt(totalWithDiscount)}`}
+              </button>
+            </div>
+          </div>
+
+        ) : (
+          <div className="janz-menu-wrap">
+            {!open && (
+              <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '13px 16px', marginBottom: 16, color: '#ef4444', textAlign: 'center', fontWeight: 600, fontSize: '0.88rem' }}>
+                🔴 En este momento no estamos tomando pedidos
+              </div>
+            )}
+
+            <div className="janz-desktop-layout">
+              {/* Columna menú */}
+              <div className="janz-menu-col">
+                {Object.entries(menu).map(([name, variants]) => {
+                  const order = { Simple: 0, Doble: 1, Triple: 2 };
+                  const sortedVariants = [...variants].sort((a, b) => (order[a.variant] ?? 99) - (order[b.variant] ?? 99));
+                  const description = sortedVariants[0]?.description;
+                  const image = variants.find(v => v.image)?.image;
+                  return (
+                    <div key={name} className="janz-product-card" style={{ marginBottom: 14, background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden', display: 'flex' }}>
+                      <div className="janz-product-img-wrap">
+                        {image ? <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', minHeight: '100%' }} /> : <div style={{ width: '100%', height: '100%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🍔</div>}
+                      </div>
+                      {/* Info */}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <div style={{ padding: '14px 16px 6px' }}>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#E8B84B', lineHeight: 1, letterSpacing: '-0.3px' }}>{name}</div>
+                          {description && <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.76rem', fontWeight: 600, marginTop: 5, lineHeight: 1.5 }}>{description}</div>}
+                        </div>
+                        <div style={{ padding: '4px 0 8px' }}>
+                          {sortedVariants.map((p, idx) => {
+                            const inCart = cart.find(i => i.product === p._id);
+                            const unavailable = !p.available;
+                            return (
+                              <div key={p._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 16px', borderTop: idx > 0 ? '1px solid rgba(255,255,255,0.04)' : 'none', opacity: unavailable ? 0.4 : 1 }}>
+                                <div>
+                                  <div style={{ fontWeight: 700, color: 'white', fontSize: '0.9rem' }}>{p.variant}{unavailable && <span style={{ color: '#ef4444', fontSize: '0.65rem', marginLeft: 8, fontWeight: 500 }}>NO DISPONIBLE</span>}</div>
+                                  <div style={{ color: '#E8B84B', fontWeight: 800, fontSize: '0.95rem', marginTop: 2 }}>{fmt(p.salePrice)}</div>
+                                </div>
+                                {!unavailable && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    {inCart ? (
+                                      <>
+                                        <button onClick={() => removeFromCart(p._id)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', border: 'none', color: 'white', fontSize: '1rem', cursor: 'pointer' }}>−</button>
+                                        <span style={{ fontWeight: 800, minWidth: 18, textAlign: 'center', color: 'white', fontSize: '0.95rem' }}>{inCart.quantity}</span>
+                                        <button onClick={() => handleAddToCart(p)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#E8B84B', border: 'none', color: '#000', fontSize: '1rem', cursor: 'pointer', fontWeight: 800 }}>+</button>
+                                      </>
+                                    ) : (
+                                      <button onClick={() => handleAddToCart(p)} style={{ background: '#E8B84B', color: '#000', border: 'none', padding: '8px 18px', borderRadius: 9, fontWeight: 800, cursor: 'pointer', fontSize: '0.85rem' }}>Agregar</button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {availableAdditionals.length > 0 && (
+                  <div style={{ marginBottom: 40 }}>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#2a2a2a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>Adicionales</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {availableAdditionals.map(add => (
+                        <div key={add._id} style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 10, padding: '11px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div><span style={{ color: '#888', fontWeight: 600, fontSize: '0.88rem' }}>{add.emoji} {add.name}</span>{add.description && <span style={{ color: '#2a2a2a', fontSize: '0.75rem', marginLeft: 8 }}>{add.description}</span>}</div>
+                          <span style={{ color: '#E8B84B', fontWeight: 700, fontSize: '0.9rem' }}>{fmt(add.price)}</span>
                         </div>
                       ))}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, marginTop: 4 }}>
-                        <span style={{ fontWeight: 700, color: '#E8B84B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total</span>
-                        <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>{fmt(total)}</span>
-                      </div>
-                      <button onClick={() => setStep('form')} style={{ width: '100%', background: '#E8B84B', color: '#000', border: 'none', padding: '13px', borderRadius: 10, fontWeight: 800, cursor: 'pointer', fontSize: '0.95rem', marginTop: 14 }}>
-                        Confirmar pedido →
-                      </button>
-                    </>
-                  )}
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ textAlign: 'center', padding: '20px 0 8px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                  <img src={logoJanz} alt="Janz" style={{ height: 28, opacity: 0.15, display: 'block', margin: '0 auto 6px' }} />
+                  <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: '0.7rem', letterSpacing: '0.05em' }}>Janz Burgers · Pedí, Mordé, Repetí.</div>
+                </div>
+              </div>
+
+              {/* Sidebar carrito — solo desktop */}
+              <div className="janz-sidebar">
+                <div style={{ position: 'sticky', top: 20 }}>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#2a2a2a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 14 }}>Tu pedido</div>
+                  <div style={{ background: '#0f0f0f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }}>
+                    {cart.length === 0 ? (
+                      <div style={{ color: '#2a2a2a', fontSize: '0.85rem', textAlign: 'center', padding: '20px 0' }}>Agregá productos para empezar</div>
+                    ) : (
+                      <>
+                        {cart.map((item, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                            <div>
+                              <div style={{ fontSize: '0.85rem', color: '#aaa' }}>{item.productName} {item.variant}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#444', marginTop: 2 }}>×{item.quantity}</div>
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600 }}>{fmt(itemTotal(item))}</div>
+                          </div>
+                        ))}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, marginTop: 4 }}>
+                          <span style={{ fontWeight: 700, color: '#E8B84B', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Total</span>
+                          <span style={{ fontSize: '1.4rem', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>{fmt(total)}</span>
+                        </div>
+                        <button onClick={() => setStep('form')} style={{ width: '100%', background: '#E8B84B', color: '#000', border: 'none', padding: '13px', borderRadius: 10, fontWeight: 800, cursor: 'pointer', fontSize: '0.95rem', marginTop: 14 }}>
+                          Confirmar pedido →
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Botón flotante carrito — solo móvil */}
-      {cart.length > 0 && step === 'menu' && (
-        <div className="janz-cart-float" style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}>
-          <button onClick={() => setStep('form')} style={{ background: '#E8B84B', color: '#000', border: 'none', padding: '14px 28px', borderRadius: 100, fontWeight: 800, cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 8px 32px rgba(232,184,75,0.3)', whiteSpace: 'nowrap', letterSpacing: '-0.2px' }}>
-            🛒 Ver pedido ({cart.reduce((s, i) => s + i.quantity, 0)}) — {fmt(total)}
-          </button>
-        </div>
-      )}
-    </div>
+        {/* Botón flotante carrito — solo móvil */}
+        {cart.length > 0 && step === 'menu' && (
+          <div className="janz-cart-float" style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            {(() => {
+              const bestFreeZone = zones.find(z => z.freeFrom > 0 && total < z.freeFrom);
+              if (bestFreeZone) {
+                const falta = bestFreeZone.freeFrom - total;
+                return (
+                  <div style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: 100, padding: '6px 16px', fontSize: '0.78rem', fontWeight: 700, color: '#22c55e', whiteSpace: 'nowrap' }}>
+                    🚚 Agregá {fmt(falta)} más y tenés envío gratis
+                  </div>
+                );
+              }
+              if (zones.some(z => z.freeFrom > 0 && total >= z.freeFrom)) {
+                return (
+                  <div style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: 100, padding: '6px 16px', fontSize: '0.78rem', fontWeight: 700, color: '#22c55e', whiteSpace: 'nowrap' }}>
+                    🎉 ¡Tenés envío gratis!
+                  </div>
+                );
+              }
+              return null;
+            })()}
+            <button onClick={() => setStep('form')} style={{ background: '#E8B84B', color: '#000', border: 'none', padding: '14px 28px', borderRadius: 100, fontWeight: 800, cursor: 'pointer', fontSize: '0.95rem', boxShadow: '0 8px 32px rgba(232,184,75,0.3)', whiteSpace: 'nowrap', letterSpacing: '-0.2px' }}>
+              🛒 Ver pedido ({cart.reduce((s, i) => s + i.quantity, 0)}) — {fmt(total)}
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -4,6 +4,8 @@ import API from '../utils/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
+const fmt = n => `$${Number(n||0).toLocaleString('es-AR')}`;
+
 export default function Stock() {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,7 @@ export default function Stock() {
     low: stocks.filter(s => s.status === 'low').length,
     ok: stocks.filter(s => s.status === 'ok').length
   };
+  const totalValue = stocks.reduce((sum, s) => sum + (s.currentStock * (s.ingredient?.costPerUnit || 0)), 0);
 
   return (
     <>
@@ -72,6 +75,16 @@ export default function Stock() {
               <div className="card-value" style={{ color: c.color }}>{c.value}</div>
             </div>
           ))}
+          <div className="card" style={{ borderColor: 'var(--gold)' }}>
+            <div className="card-title">💰 Valor en mercadería</div>
+            <div className="card-value" style={{ color: 'var(--gold)', fontSize: '1.3rem' }}>{fmt(totalValue)}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--gray)', marginTop: 4 }}>Costo total del stock actual</div>
+          </div>
+          <div className="card" style={{ borderColor: 'var(--gold)' }}>
+            <div className="card-title">💰 Valor en mercadería</div>
+            <div className="card-value" style={{ color: 'var(--gold)', fontSize: '1.3rem' }}>{fmt(totalValue)}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--gray)', marginTop: 4 }}>Costo total del stock actual</div>
+          </div>
         </div>
 
         {/* ── Verificador de producción mínima ─────────────────────────── */}
@@ -182,6 +195,8 @@ export default function Stock() {
                   <th>Mínimo</th>
                   <th>Unidad</th>
                   <th>Estado</th>
+                  <th>Costo unitario</th>
+                  <th>Valor stock</th>
                   <th>Notas</th>
                   <th></th>
                 </tr>
@@ -217,6 +232,18 @@ export default function Stock() {
                       <span className={`badge badge-${stock.status}`}>
                         {stock.status === 'out' ? '🔴 Sin Stock' : stock.status === 'low' ? '🟡 Bajo' : '🟢 OK'}
                       </span>
+                    </td>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
+                      {stock.ingredient?.costPerUnit ? fmt(stock.ingredient.costPerUnit) : '—'}
+                    </td>
+                    <td style={{ fontWeight: 600, color: 'var(--gold)' }}>
+                      {stock.ingredient?.costPerUnit ? fmt(Math.round(stock.currentStock * stock.ingredient.costPerUnit)) : '—'}
+                    </td>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>
+                      {stock.ingredient?.costPerUnit ? fmt(stock.ingredient.costPerUnit) : '—'}
+                    </td>
+                    <td style={{ fontWeight: 600, color: 'var(--gold)' }}>
+                      {stock.ingredient?.costPerUnit ? fmt(Math.round(stock.currentStock * stock.ingredient.costPerUnit)) : '—'}
                     </td>
                     <td>
                       {editing === stock._id ? (
